@@ -14,109 +14,198 @@
 #include <stdio.h>
 
 #ifndef BUFFER_SIZE
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 10
 #endif
 
-char	*get_next_line(int fd)
+void	initialize_arr(char *arr, int size)
 {
-	char		buf[BUFFER_SIZE];
-	static int	bytesRead = 0;
-	static int	totalRead = 0;
-	int			i;
-	static char	save[BUFFER_SIZE];
-	char		*result;
+	int	i;
 
-	// bytesRead = 0;
-	result = NULL;
-	printf("totalRead = %d\n", totalRead);
-	printf("save = %s\n", save);
+	i = 0;
+	while (i < size)
+	{
+		*arr = '\0';
+		arr++;
+		i++;
+	}
+}
+
+char	*join_save_buf(char *save, char *buf)
+{
+	char	*miniBuf;
+	char	*result;
+	int		i;
+
+	// //printf("\x1b[35m---join_save_buf---\n");
+	if (buf[0] == '\0')
+	{
+		buf = save;
+		save = "";
+	}
+	i = 0;
+	while (buf[i] != '\n' && buf[i] != '\0')
+		i++;
+	if (ft_strchr(save, '\n'))
+		--i;
+	miniBuf = (char *)malloc(i + 2);
+	if (miniBuf == NULL)
+		return (NULL);
+	// //printf("i\t=\t%d\n", i);
+	i = 0;
+	while (buf[i] != '\0' && buf[i] != '\n' && i < BUFFER_SIZE)
+	{		
+		miniBuf[i] = buf[i];
+		i++;
+	}
+	if (buf[i] == '\n')
+			miniBuf[i++] = '\n';
+	miniBuf[i] = '\0';
+	// //printf("miniBuf\t=\t%s\n", miniBuf);
+	result = ft_strjoin(save, miniBuf);
+	free(miniBuf);
+	if (result == NULL)
+		return (NULL);
+	// //printf("\x1b[m\n");
+	return (result);
+}
+
+void	set_next(char *next, char *buf)
+{
+	int			i;
+	int			next_i;
+	int			flag;
+
+	//printf("\x1b[31m---set_next---\n");
+	if (ft_strchr(next, '\n') != NULL || buf[0] == '\0')
+	{
+		i = 0;
+		next_i = 0;
+		while (next[i] != '\n')
+			i++;
+		if (next[i] == '\n')
+			i++;
+		while (i + next_i < BUFFER_SIZE && next[i] != '\n')
+		{
+			next[next_i] = next[i + next_i];
+			next_i++;
+		}
+		next[i + next_i] = '\0';
+		//printf("if: i\t=\t%d\nnext_i\t=\t%d\nnext\t=\t%s\n", i, next_i, next);
+		//printf("----------\x1b[m\n");
+		return ;
+	}
+	initialize_arr(next, BUFFER_SIZE);
+	i = 0;
+	next_i = 0;
+	flag = 0;
+	while (i < BUFFER_SIZE && buf[i] != '\0')
+	{
+		if (flag == 1)
+		{
+			next[next_i] = buf[i];
+			next_i++;
+		}
+		if (buf[i] == '\n')
+			flag = 1;
+		i++;
+	}
+	//printf("next\t=\t%s\n", next);
+	//printf("----------\x1b[m\n");
+}
+
+char	*return_line(int fd, char *buf, char *next)
+{
+	static char	*save = "";
+	char		*tmp;
+	char		*result;
+	int			bytes;
+
+	//printf("\x1b[32m---return_line---\n");
+	// //printf("save\t=\t%s\n", save);
+	bytes = 0;
 	while (1)
 	{
-		if (totalRead == 0)
-			bytesRead = read(fd, buf, BUFFER_SIZE);
+		if (ft_strchr(save, '\n') == NULL)
+		{
+			bytes = read(fd, buf, BUFFER_SIZE);
+			//printf("buf\t=\t%s\n", buf);
+			//printf("bytes\t=\t%d\n", bytes);
+			if (bytes <= 0)
+			{
+				break;
+			}
+		}
+		if (0 < bytes && bytes == BUFFER_SIZE && ft_strchr(buf, '\n') == NULL)
+		{
+			save = ft_strjoin(save, buf);
+			if (save == NULL)
+				return (NULL);
+			//printf("if: save\t=\t%s\n", save);
+		}
 		else
 		{
-			ft_memcpy(buf, save, ft_strlen(save));
-		}
-		if (bytesRead <= 0)
-		{
-			printf("bytesRead <= 0: bytesRead = %d\n", bytesRead);
-			printf("ファイルの終端に到達\n");
-			break ;
-		}
-		i = 0;
-		printf("bytesRead = %d\n", bytesRead);
-		while (i < bytesRead)
-		{
-			if (BUFFER_SIZE < totalRead + i + 1)
-			{
-				free(result);
+			//printf("else: save\t=\t%s\n", save);
+			result = join_save_buf(save, buf);
+			//printf("next\t=\t%s\n", next);
+			set_next(next, buf);
+			save = ft_strjoin(next, "");
+			//printf("save\t=\t%s\n", save);
+			if (save == NULL)
 				return (NULL);
-			}
-			if (buf[i] == '\n')
-			{
-				printf("改行見つかった\n");
-				printf("buf = %s\n", buf);
-				printf("i = %d\n", i);
-				result = (char *)malloc(totalRead + i + 2);
-				if (result == NULL)
-					return (NULL);
-				result[i + 1] = '\0';
-				// ft_memcpy(result, save, totalRead);
-				ft_memcpy(result, buf, i + 1);
-				ft_memcpy(save, buf + i + 1, bytesRead - i - 1);
-				totalRead += i + 1;
-				return (result);
-			}
-			i++;
-			// if (buf[i] == '\0')
-			// 	break ;
+			//printf("----------\x1b[m\n");
+			return (result);
 		}
-		printf("改行見つからなかった\n");
-		ft_memcpy(save + totalRead, buf, bytesRead);
-		totalRead += bytesRead;
+		initialize_arr(buf, BUFFER_SIZE);
 	}
-	if (0 < totalRead)
+	//printf("save = %s\n", save);
+	//printf("----------\x1b[m\n");
+	if (save[0] != '\0')
 	{
-		printf("totalRead > 0: totalRead = %d\n", totalRead);
-		result = (char *)malloc(totalRead + 1);
-		if (result == NULL)
-			return (NULL);
-		ft_memcpy(result, save, totalRead);
-		totalRead = 0;
-		return (result);
+		tmp = save;
+		save = "";
+		return (tmp);
 	}
 	return (NULL);
 }
 
-#include <fcntl.h>
-
-int	main(int argc, char **argv)
+char	*get_next_line(int fd)
 {
-	char	*file;
-	int		fd;
-	char	*line;
-	int		cnt;
+	char		buf[BUFFER_SIZE + 1];
+	static char	next[BUFFER_SIZE] = "";
 
-	if (argc != 2)
-	{
-		printf("指定できるファイルは一個です。\n");
-		return (1);
-	}
-	file = argv[1];
-	fd = open(file, O_RDONLY);
-	cnt = 0;
-	while (1)
-	{
-		printf("cnt : %d\n", cnt);
-		line = get_next_line(fd);
-		if (line == NULL)
-		{
-			printf("ファイルの読み込みに失敗しました。\n");
-			return (0);
-		}
-		printf("line = %s", line);
-		cnt++;
-	}
-	return (0);
+	initialize_arr(buf, BUFFER_SIZE + 1);
+	// //printf("buf\t=\t%s\n", buf);
+	return (return_line(fd, buf, next));
 }
+
+// #include <fcntl.h>
+
+// int	main(int argc, char **argv)
+// {
+// 	char	*file;
+// 	int		fd;
+// 	char	*line;
+// 	int		cnt;
+
+// 	if (argc != 2)
+// 	{
+// 		// //printf("指定できるファイルは一個です。\n");
+// 		return (1);
+// 	}
+// 	file = argv[1];
+// 	fd = open(file, O_RDONLY);
+// 	cnt = 0;
+// 	while (1)
+// 	{
+// 		// //printf("cnt : %d\n", cnt);
+// 		line = get_next_line(fd);
+// 		if (line == NULL)
+// 		{
+// 			// //printf("\nファイルの読み込みに失敗しました。\n");
+// 			return (0);
+// 		}
+// 		//printf("line = %s", line);
+// 		cnt++;
+// 	}
+// 	return (0);
+// }

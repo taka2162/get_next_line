@@ -6,7 +6,7 @@
 /*   By: ttakino <ttakino@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/13 15:34:03 by ttakino           #+#    #+#             */
-/*   Updated: 2024/05/14 16:46:45 by ttakino          ###   ########.fr       */
+/*   Updated: 2024/05/16 16:01:53 by ttakino          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ typedef struct s_list
 char	*get_next_line(int fd);
 size_t	ft_len_to_x(const char *str, char x);
 void	*ft_memcpy(void *dest, const void *src, size_t n);
-char	*ft_strchr(const char *str, int c);
 char	*ft_strchr(const char *str, int c);
 size_t	ft_strlen(const char *str);
 void	ft_lstadd_back(t_list **lst, t_list *new);
