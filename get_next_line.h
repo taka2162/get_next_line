@@ -6,7 +6,7 @@
 /*   By: ttakino <ttakino@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/13 15:34:03 by ttakino           #+#    #+#             */
-/*   Updated: 2024/05/16 16:01:53 by ttakino          ###   ########.fr       */
+/*   Updated: 2024/05/19 18:23:37 by ttakino          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 # define GET_NEXT_LINE_H
 # include <unistd.h>
 # include <stdlib.h>
+# include <limits.h>
 
 // typedef struct str
 // {
@@ -37,5 +38,6 @@ void	ft_lstadd_back(t_list **lst, t_list *new);
 void	ft_lstclear(t_list **lst, void (*del)(void *));
 int		ft_lstsize(t_list *lst);
 char	*ft_strjoin(char const *s1, char const *s2);
+char	*ft_strdup(const char *string);
 
 #endif

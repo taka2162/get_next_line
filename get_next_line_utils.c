@@ -46,6 +46,8 @@ char	*ft_strchr(const char *str, int c)
 	int				i;
 	unsigned char	cst_c;
 
+	if (str == NULL)
+		return (NULL);
 	cst_c = (unsigned char)c;
 	i = 0;
 	while (str[i] != '\0')
@@ -140,5 +142,25 @@ char	*ft_strjoin(char const *s1, char const *s2)
 		result[s1_size + s2_size - i] = s2[s2_size - i];
 		i++;
 	}
+	return (result);
+}
+
+char	*ft_strdup(const char *string)
+{
+	int		size;
+	char	*result;
+	int		i;
+
+	i = 0;
+	size = ft_strlen(string) + 1;
+	result = (char *)malloc(size * sizeof(char));
+	if (result == NULL)
+		return (NULL);
+	while (string[i] != '\0')
+	{
+		result[i] = string[i];
+		i++;
+	}
+	result[i] = '\0';
 	return (result);
 }

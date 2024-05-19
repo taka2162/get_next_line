@@ -14,115 +14,176 @@
 #include <stdio.h>
 
 #ifndef BUFFER_SIZE
-#define BUFFER_SIZE 100
+#define BUFFER_SIZE 10
 #endif
 
 char *return_result(char **save)
 {
 	char *result;
-	char *new_save;
-	int cnt;
-	int i;
 
 	//printf("\x1b[35m---return_result---\n");
 
 	if (*save == NULL)
 		return (NULL);
-	cnt = 0;
-	while ((*save)[cnt] != '\n' && (*save)[cnt] != '\0')
-	{
-		cnt++;
-	}
-
-	// //printf("cnt\t=\t%d\n", cnt);
-
-	if ((*save)[cnt] == '\0')
-	{
-		// result = *save;
-		// free(*save);
-		// *save = "";
-		return (*save);
-	}
-	result = (char *)malloc(cnt + 2);
+	// cnt = 0;
+	// while ((*save)[cnt] != '\n' && (*save)[cnt] != '\0')
+	// {
+	// 	cnt++;
+	// }
+	char *new_line_pos = ft_strchr(*save, '\n');
+	*new_line_pos = '\0';
+	result = (char *)malloc(ft_strlen(*save) + 2);
 	if (result == NULL)
 		return (NULL);
-	i = 0;
-	while (i <= cnt)
-	{
-		result[i] = (*save)[i];
-		i++;
-	}
-	result[i] = '\0';
+	ft_memcpy(result, *save, ft_strlen(*save));
+	result[ft_strlen(*save) + 1] = '\0';
+	result[ft_strlen(*save)] = '\n';
+
+	//	//printf("cnt\t=\t%d\n", cnt);
+
+	// if ((*save)[cnt] == '\0')
+	// {
+	// 	result = *save;
+	// 	free(*save);
+	// 	*save = "";
+	// 	return (result);
+	// }
+
+
+	// result = (char *)malloc(cnt + 2);
+	// if (result == NULL)
+	// 	return (NULL);
+	// i = 0;
+	// while (i <= cnt)
+	// {
+	// 	result[i] = (*save)[i];
+	// 	i++;
+	// }
+	// result[i] = '\0';
 
 	//printf("result\t=\t%s\n", result);
 
-	while ((*save)[cnt] != '\0')
-		cnt++;
-	new_save = (char *)malloc(cnt - i + 1);
-	if (new_save == NULL)
+	char	*tmp_change;
+	tmp_change = ft_strdup(++new_line_pos);
+	if (tmp_change == NULL)
 	{
 		free(result);
 		return (NULL);
 	}
+	free(*save);
+	*save = tmp_change;
+	//printf("*save = %s\n", *save);
 
-	// //printf("cnt-i+1\t=\t%d\n", cnt - i + 1);
+	// while ((*save)[cnt] != '\0')
+	// 	cnt++;
+	// new_save = (char *)malloc(cnt - i + 1);
+	// if (new_save == NULL)
+	// {
+	// 	//printf("free(result)\n");
+	// 	return (free(result), NULL);
+	// }
 
-	cnt = 0;
-	while ((*save)[i + cnt] != '\0')
-	{
-		// //printf("cnt\t=\t%d\n", cnt);
-		// //printf("(*save)[i+cnt]\t=\t%c\n", (*save)[i+cnt]);
+	// //	//printf("cnt-i+1\t=\t%d\n", cnt - i + 1);
 
-		new_save[cnt] = (*save)[i + cnt];
-		cnt++;
-	}
-	// //printf("cnt = %d\n", cnt);
-	new_save[cnt] = '\0';
+	// cnt = 0;
+	// while ((*save)[i + cnt] != '\0')
+	// {
+	// 	//	//printf("cnt\t=\t%d\n", cnt);
+	// 	//	//printf("(*save)[i+cnt]\t=\t%c\n", (*save)[i+cnt]);
 
-	// //printf("new_save\t=\t%s\n", new_save);
+	// 	new_save[cnt] = (*save)[i + cnt];
+	// 	cnt++;
+	// }
+	// //	//printf("cnt = %d\n", cnt);
+	// new_save[cnt] = '\0';
 
-	if (save[0] != '\0')
-		free(*save);
-	*save = new_save;
+	// //	//printf("new_save\t=\t%s\n", new_save);
+
+	// // //printf("free(*save)\n");
+	// // //printf("*save\t=\t%s\n", *save);
+	// free(*save);
+	// *save = new_save;
 
 	//printf("----------\x1b[m\n");
 
 	return (result);
 }
 
-char *return_line(int fd, char *buf)
+char	*return_line(int fd, char *tmp, char *result, int bytes)
 {
-	static char *save = "";
-	char *tmp;
-	char *result;
-	int bytes;
+	char		*buf;
+	static char	*save = NULL;
+	// char		*start_pos;
 
 	//printf("\x1b[32m---return_line---\n");
 
+	// if (save == NULL)
+	// {
+	// 	save = (char *)malloc(1);
+	// 	if (save == NULL)
+	// 		return (NULL);
+	// 	*save = '\0';
+	// }
+	buf = NULL;
+	// start_pos = NULL;
 	//printf("save\t=\t%s\n", save);
-	bytes = 0;
 	while (1)
 	{
 		if (ft_strchr(save, '\n') == NULL)
 		{
+			buf = (char *)malloc(BUFFER_SIZE + 1);
+			if (buf == NULL)
+				return (NULL);
 			bytes = read(fd, buf, BUFFER_SIZE);
 
-			buf[bytes] = '\0';
 			//printf("buf\t=\t%s\n", buf);
 			//printf("bytes\t=\t%d\n", bytes);
 
-			tmp = save;
-			save = ft_strjoin(tmp, buf);
-			if (save == NULL)
-				return (NULL);
-			if (tmp[0] != '\0')
-			{
-				free(tmp);
-				tmp = NULL;
-			}
 			if (bytes <= 0)
-			{
 				break;
+			buf[bytes] = '\0';
+			if (save == NULL)
+			{
+				//printf("\x1b[36mif (save == NULL)\n");
+				save = (char *)malloc(bytes + 1);
+				if (save == NULL)
+					return (NULL);
+				// save = buf;
+				// start_pos = save;
+				//printf("save = %s\n", save);
+				ft_memcpy(save, buf, bytes + 1);
+				free(buf);
+				//printf("\x1b[32m");
+			}
+			else
+			{
+				//printf("\x1b[36melse\n");
+				//printf("save = %s\n", save);
+				tmp = ft_strjoin(save, buf);
+				if (tmp == NULL)
+				{
+					free(buf);
+					free(save);
+					// free(start_pos);
+					buf = NULL;
+					save = NULL;
+					// start_pos = NULL;
+					return (NULL);
+				}
+				//printf("buf = %s\n", buf);
+				// //printf("start_pos = %s\n", start_pos);
+				free(buf);
+				//printf("free(buf)\n");
+				buf = NULL;
+				// free(start_pos);
+				// //printf("free(start_pos)\n");
+				// start_pos = NULL;
+				if (save != NULL)
+					free(save);
+				//printf("tmp = %s\n", tmp);
+				save = tmp;
+				// start_pos = save;
+				//printf("\x1b[32m");
 			}
 		}
 		if (ft_strchr(save, '\n') != NULL)
@@ -130,40 +191,72 @@ char *return_line(int fd, char *buf)
 			//printf("save\t=\t%s\n", save);
 
 			result = return_result(&save);
-			if (result == NULL)
-				return (NULL);
-
+			
 			//printf("\x1b[32m");
 			//printf("save\t=\t%s\n", save);
 			//printf("result\t=\t%s\n", result);
-			//printf("----------\x1b[m\n");
 			//printf("return (result)\n");
-
+			// free(buf);
+			//printf("free(buf)\n");
+			// buf = NULL;
+			// free(start_pos);
+			//printf("free(start_pos)\n");
+			// start_pos = NULL;
+			//printf("----------\x1b[m\n");
 			return (result);
 		}
 	}
 
-	//printf("----------\x1b[m\n");
-
-	if (save[0] != '\0')
+	if (bytes == -1)
 	{
-		tmp = save;
-		if (save[0] != '\0')
+		free(save);
+		free(buf);
+		save = NULL;
+		buf = NULL;
+		return (NULL);
+	}
+	if (save != NULL)
+	{
+		if (*save == '\0')
 		{
 			free(save);
-			save = "";
+			save = NULL;
 		}
+		tmp = save;
+		save = NULL;
+		//printf("tmp = %s\n", tmp);
+		free(buf);
+		// free(start_pos);
+		buf = NULL;
+		// start_pos = NULL;
+		//printf("----------\x1b[m\n");
 		return (tmp);
 	}
+
+	//printf("buf = %s\n", buf);
+	// //printf("start_pos = %s\n", start_pos);
+	free(buf);
+	free(save);
+	save = NULL;
+	// free(start_pos);
+	buf = NULL;
+	// start_pos = NULL;
+	//printf("----------\x1b[m\n");
 	return (NULL);
 }
 
 char *get_next_line(int fd)
 {
-	char buf[BUFFER_SIZE + 1];
+	char	*tmp;
+	char	*result;
+	int		bytes;
 
-	//printf("buf = %s\n", buf);
-	return (return_line(fd, buf));
+	if (BUFFER_SIZE >= INT_MAX)
+		return (NULL);
+	tmp = NULL;
+	result = NULL;
+	bytes = 0;
+	return (return_line(fd, tmp, result, bytes));
 }
 
 // #include <fcntl.h>
@@ -189,11 +282,16 @@ char *get_next_line(int fd)
 // 		line = get_next_line(fd);
 // 		if (line == NULL)
 // 		{
-// 			//printf("\nファイルの読み込みに失敗しました。\n");
+// 			printf("\nファイルの読み込みに失敗しました。\n");
 // 			return (0);
 // 		}
-// 		//printf("line = %s", line);
+// 		printf("line = %s", line);
 // 		cnt++;
 // 	}
 // 	return (0);
+// }
+
+// __attribute__((destructor))
+// static void destructor() {
+//     system("leaks -q a.out");
 // }
