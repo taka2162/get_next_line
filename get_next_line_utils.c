@@ -12,16 +12,6 @@
 
 #include "get_next_line.h"
 
-// size_t	ft_len_to_x(const char *str, char x)
-// {
-// 	size_t	i;
-
-// 	i = 0;
-// 	while (str[i] != x && str[i] != '\0')
-// 		i++;
-// 	return (i);
-// }
-
 void	*ft_memcpy(void *dest, const void *src, size_t n)
 {
 	size_t				i;
@@ -70,54 +60,6 @@ size_t	ft_strlen(const char *str)
 		i++;
 	return (i);
 }
-
-// void	ft_lstadd_back(t_list **lst, t_list *new)
-// {
-// 	t_list	*last;
-
-// 	if (lst == NULL)
-// 	{
-// 		*lst = new;
-// 		return ;
-// 	}
-// 	last = *lst;
-// 	while ((*lst)->next != NULL)
-// 	{
-// 		*lst = (*lst)->next;
-// 	}
-// 	(*lst)->next = new;
-// }
-
-// void	ft_lstclear(t_list **lst, void (*del)(void *))
-// {
-// 	t_list	*next;
-// 	t_list	*current;
-
-// 	if (lst == NULL || del == NULL)
-// 		return ;
-// 	current = *lst;
-// 	while (current != NULL)
-// 	{
-// 		next = current->next;
-// 		del(current->content);
-// 		free(current);
-// 		current = next;
-// 	}
-// 	*lst = NULL;
-// }
-
-// int	ft_lstsize(t_list *lst)
-// {
-// 	int	size;
-
-// 	size = 0;
-// 	while (lst != NULL)
-// 	{
-// 		size++;
-// 		lst = lst->next;
-// 	}
-// 	return (size);
-// }
 
 char	*ft_strjoin(char const *s1, char const *s2)
 {
