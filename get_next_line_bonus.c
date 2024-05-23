@@ -6,7 +6,7 @@
 /*   By: ttakino <ttakino@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 15:46:55 by ttakino           #+#    #+#             */
-/*   Updated: 2024/05/20 17:28:42 by ttakino          ###   ########.fr       */
+/*   Updated: 2024/05/23 18:12:06 by ttakino          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,6 @@ char	*generate_new_save(char *save[OPEN_MAX], char **buf, int bytes)
 		if (tmp == NULL)
 			return (NULL);
 		ft_memcpy(tmp, *buf, bytes + 1);
-		free(*buf);
-		*buf = NULL;
 		*save = tmp;
 		return (*save);
 	}
@@ -31,8 +29,8 @@ char	*generate_new_save(char *save[OPEN_MAX], char **buf, int bytes)
 	{
 		tmp = ft_strjoin(*save, *buf);
 		if (tmp == NULL)
-			return (free(*buf), free(*save), *buf = NULL, *save = NULL, NULL);
-		return (free(*buf), free(*save), *buf = NULL, tmp);
+			return (free(*save), *save = NULL, NULL);
+		return (free(*save), tmp);
 	}
 }
 
@@ -41,20 +39,15 @@ char	*generate_line(char *save[OPEN_MAX])
 	char	*result;
 	char	*new_line_pos;
 	char	*tmp_change;
-	int		save_len;
 
 	if (*save == NULL)
 		return (NULL);
 	new_line_pos = ft_strchr(*save, '\n');
 	*new_line_pos = '\0';
-	save_len = ft_strlen(*save);
-	result = (char *)malloc(save_len + 2);
+	result = ft_strjoin(*save, "\n");
 	if (result == NULL)
-		return (NULL);
-	ft_memcpy(result, *save, save_len);
-	result[save_len + 1] = '\0';
-	result[save_len] = '\n';
-	tmp_change = ft_strdup(++new_line_pos);
+		return (free(*save), *save = NULL, NULL);
+	tmp_change = ft_strdup(new_line_pos + 1);
 	if (tmp_change == NULL)
 	{
 		free(result);
@@ -89,31 +82,27 @@ char	*return_line(int fd, int bytes)
 	char		*buf;
 	static char	*save[OPEN_MAX] = {NULL};
 
-	buf = NULL;
-	while (1)
+	buf = (char *)malloc(BUFFER_SIZE + 1);
+	if (buf == NULL)
+		return (NULL);
+	while (ft_strchr(save[fd], '\n') == NULL)
 	{
-		if (ft_strchr(save[fd], '\n') == NULL)
-		{
-			buf = (char *)malloc(BUFFER_SIZE + 1);
-			if (buf == NULL)
-				return (NULL);
 			bytes = read(fd, buf, BUFFER_SIZE);
 			if (bytes <= 0)
-				break ;
+				return (end_of_loop(&buf, &save[fd], bytes));
 			buf[bytes] = '\0';
 			save[fd] = generate_new_save(&save[fd], &buf, bytes);
-		}
-		if (ft_strchr(save[fd], '\n') != NULL)
-			return (generate_line(&save[fd]));
 	}
-	return (end_of_loop(&buf, &save[fd], bytes));
+	free(buf);
+	buf = NULL;
+	return (generate_line(&save[fd]));
 }
 
 char	*get_next_line(int fd)
 {
 	int		bytes;
 
-	if (BUFFER_SIZE < 0 || INT_MAX < BUFFER_SIZE || fd < 0 || 1024 < fd)
+	if (BUFFER_SIZE < 0 || INT_MAX < BUFFER_SIZE || fd < 0 || OPEN_MAX < fd)
 		return (NULL);
 	bytes = 0;
 	return (return_line(fd, bytes));
