@@ -6,7 +6,7 @@
 /*   By: ttakino <ttakino@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 15:46:55 by ttakino           #+#    #+#             */
-/*   Updated: 2024/05/23 18:12:06 by ttakino          ###   ########.fr       */
+/*   Updated: 2024/05/24 12:17:05 by ttakino          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,11 +87,11 @@ char	*return_line(int fd, int bytes)
 		return (NULL);
 	while (ft_strchr(save[fd], '\n') == NULL)
 	{
-			bytes = read(fd, buf, BUFFER_SIZE);
-			if (bytes <= 0)
-				return (end_of_loop(&buf, &save[fd], bytes));
-			buf[bytes] = '\0';
-			save[fd] = generate_new_save(&save[fd], &buf, bytes);
+		bytes = read(fd, buf, BUFFER_SIZE);
+		if (bytes <= 0)
+			return (end_of_loop(&buf, &save[fd], bytes));
+		buf[bytes] = '\0';
+		save[fd] = generate_new_save(&save[fd], &buf, bytes);
 	}
 	free(buf);
 	buf = NULL;
