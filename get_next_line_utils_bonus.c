@@ -6,11 +6,11 @@
 /*   By: ttakino <ttakino@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 15:46:31 by ttakino           #+#    #+#             */
-/*   Updated: 2024/05/20 15:46:34 by ttakino          ###   ########.fr       */
+/*   Updated: 2024/07/26 18:40:39 by ttakino          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 void	*ft_memcpy(void *dest, const void *src, size_t n)
 {

@@ -6,13 +6,13 @@
 /*   By: ttakino <ttakino@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/13 15:34:07 by ttakino           #+#    #+#             */
-/*   Updated: 2024/05/14 15:28:01 by ttakino          ###   ########.fr       */
+/*   Updated: 2024/07/26 18:50:30 by ttakino          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*generate_new_save(char **save, char **buf, int bytes)
+char	*update_save(char **save, char **buf, int bytes)
 {
 	char	*tmp;
 
@@ -22,8 +22,6 @@ char	*generate_new_save(char **save, char **buf, int bytes)
 		if (tmp == NULL)
 			return (NULL);
 		ft_memcpy(tmp, *buf, bytes + 1);
-		free(*buf);
-		*buf = NULL;
 		*save = tmp;
 		return (*save);
 	}
@@ -31,8 +29,8 @@ char	*generate_new_save(char **save, char **buf, int bytes)
 	{
 		tmp = ft_strjoin(*save, *buf);
 		if (tmp == NULL)
-			return (free(*buf), free(*save), *buf = NULL, *save = NULL, NULL);
-		return (free(*buf), free(*save), *buf = NULL, tmp);
+			return (free(*save), *save = NULL, NULL);
+		return (free(*save), tmp);
 	}
 }
 
@@ -40,32 +38,27 @@ char	*generate_line(char **save)
 {
 	char	*result;
 	char	*new_line_pos;
-	char	*tmp_change;
-	int		save_len;
+	char	*tmp;
 
 	if (*save == NULL)
 		return (NULL);
 	new_line_pos = ft_strchr(*save, '\n');
 	*new_line_pos = '\0';
-	save_len = ft_strlen(*save);
-	result = (char *)malloc(save_len + 2);
+	result = ft_strjoin(*save, "\n");
 	if (result == NULL)
-		return (NULL);
-	ft_memcpy(result, *save, save_len);
-	result[save_len + 1] = '\0';
-	result[save_len] = '\n';
-	tmp_change = ft_strdup(++new_line_pos);
-	if (tmp_change == NULL)
+		return (free(*save), *save = NULL, NULL);
+	tmp = ft_strdup(new_line_pos + 1);
+	if (tmp == NULL)
 	{
 		free(result);
 		return (NULL);
 	}
 	free(*save);
-	*save = tmp_change;
+	*save = tmp;
 	return (result);
 }
 
-char	*end_of_loop(char **buf, char **save, int bytes)
+char	*on_reading_failed(char **buf, char **save, int bytes)
 {
 	char	*tmp;
 
@@ -79,44 +72,37 @@ char	*end_of_loop(char **buf, char **save, int bytes)
 			*save = NULL;
 		}
 		tmp = *save;
-		return (free(*buf), *buf = NULL, *save = NULL, tmp);
+		*save = NULL;
+		return (free(*buf), *buf = NULL, tmp);
 	}
 	return (free(*buf), free(*save), *buf = NULL, *save = NULL, NULL);
 }
 
-char	*return_line(int fd, int bytes)
-{
-	char		*buf;
-	static char	*save = NULL;
-
-	buf = NULL;
-	while (1)
-	{
-		if (ft_strchr(save, '\n') == NULL)
-		{
-			buf = (char *)malloc(BUFFER_SIZE + 1);
-			if (buf == NULL)
-				return (NULL);
-			bytes = read(fd, buf, BUFFER_SIZE);
-			if (bytes <= 0)
-				break ;
-			buf[bytes] = '\0';
-			save = generate_new_save(&save, &buf, bytes);
-		}
-		if (ft_strchr(save, '\n') != NULL)
-			return (generate_line(&save));
-	}
-	return (end_of_loop(&buf, &save, bytes));
-}
-
 char	*get_next_line(int fd)
 {
-	int		bytes;
+	char		*buf;
+	int			bytes;
+	static char	*save = NULL;
 
-	if (BUFFER_SIZE < 0 || INT_MAX < BUFFER_SIZE || fd < 0 || OPEN_MAX < fd)
+	if (fd < 0 || OPEN_MAX < fd)
+		return (NULL);
+	buf = (char *)malloc(BUFFER_SIZE + 1);
+	if (buf == NULL)
 		return (NULL);
 	bytes = 0;
-	return (return_line(fd, bytes));
+	while (ft_strchr(save, '\n') == NULL)
+	{
+		bytes = read(fd, buf, BUFFER_SIZE);
+		if (bytes <= 0)
+			return (on_reading_failed(&buf, &save, bytes));
+		buf[bytes] = '\0';
+		save = update_save(&save, &buf, bytes);
+		if (!save)
+			break ;
+	}
+	free(buf);
+	buf = NULL;
+	return (generate_line(&save));
 }
 
 // #include <stdio.h>
@@ -130,23 +116,20 @@ char	*get_next_line(int fd)
 // 	int cnt;
 
 // 	if (argc != 2)
-// 	{
-// 		//printf("指定できるファイルは一個です。\n");
 // 		return (1);
-// 	}
 // 	file = argv[1];
 // 	fd = open(file, O_RDONLY);
 // 	cnt = 0;
 // 	while (1)
 // 	{
-// 		//printf("cnt : %d\n", cnt);
 // 		line = get_next_line(fd);
 // 		if (line == NULL)
 // 		{
-// 			printf("\nファイルの読み込みに失敗しました。\n");
+// 			printf("\nファイルの終端に達しました。\n");
 // 			return (0);
 // 		}
-// 		printf("line = %s", line);
+// 		printf("%s", line);
+// 		free(line);
 // 		cnt++;
 // 	}
 // 	return (0);
